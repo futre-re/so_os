@@ -9,11 +9,15 @@ edition = "2021"
 name = "should_panic"
 harness = false
 
+[[test]]
+name = "stack_overflow"
+harness = false
+
 [profile.dev]
-#panic = "abort"
+panic = "abort"
 
 [profile.release]
-#panic = "abort"
+panic = "abort"
 
 [package.metadata.bootimage]
 test-args = [
@@ -27,9 +31,26 @@ test-timeout = 100          # (in seconds)
 version = "1.4.0"
 features = ["spin_no_std"]
 
+[dependencies.crossbeam-queue]
+version = "0.2.1"
+default-features = false
+features = ["alloc"]
+
+[dependencies.conquer-once]
+version = "0.2.0"
+default-features = false
+
+[dependencies.futures-util]
+version = "0.3.4"
+default-features = false
+features = ["alloc"]
+
 [dependencies]
-bootloader = "0.9.23"
+bootloader = { version = "0.9.23", features = ["map_physical_memory"]}
 volatile = "0.2.6"
 spin = "0.9.4"
 x86_64 = "0.14.10"
 uart_16550 = "0.2.18"
+pic8259 = "0.10.2"
+pc-keyboard = "0.5.0"
+linked_list_allocator = "0.9.0"

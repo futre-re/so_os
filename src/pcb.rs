@@ -2,11 +2,11 @@ use alloc::string::String;
 
 //实现了进程的id，状态
 struct PCB {
-    process_id: u32, //进程ID
+    process_id: u32,       //进程ID
     process_state: String, //进程的状态
-    program_counter: u32, //程序计数器的值
-    registers: [u32; 8], //寄存器
-    // 其他进程相关的信息
+    program_counter: u32,  //程序计数器的值
+    registers: [u32; 8],   //存储进程的寄存器的值
+                           // 其他进程相关的信息
 }
 
 impl PCB {

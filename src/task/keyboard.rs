@@ -60,9 +60,18 @@ impl Stream for ScancodeStream {
 }
 
 use crate::print;
+use crate::vga_buffer::Writer;
 use futures_util::stream::StreamExt;
-use pc_keyboard::{layouts, DecodedKey, HandleControl, Keyboard, ScancodeSet1};
+use pc_keyboard::{layouts, DecodedKey, HandleControl, KeyCode, Keyboard, ScancodeSet1};
 
+// pub async fn keypresses() {
+//     let mut scancodes = ScancodeStream::new();
+//     let mut keyboard = Keyboard::new(layouts::Us104Key, ScancodeSet1, HandleControl::Ignore);
+//     while let Some(scancode) = scancodes.next().await {
+//         //if let Ok(Some(key_event)) = keyboard.add_byte(scancode) {}
+//         keyboard.add_byte(scancode);
+//     }
+// }
 pub async fn print_keypresses() {
     let mut scancodes = ScancodeStream::new();
     let mut keyboard = Keyboard::new(layouts::Us104Key, ScancodeSet1, HandleControl::Ignore);
@@ -70,12 +79,35 @@ pub async fn print_keypresses() {
     while let Some(scancode) = scancodes.next().await {
         if let Ok(Some(key_event)) = keyboard.add_byte(scancode) {
             if let Some(key) = keyboard.process_keyevent(key_event) {
-                match key {
-                    DecodedKey::Unicode(character) => print!("{}", character),
-                    DecodedKey::RawKey(key) => print!("{:?}", key),
-                }
+                key_task(key);
+                // match key {
+                //     DecodedKey::Unicode(character) => match DecodedKey::Unicode(character) {
+                //         DecodedKey::Unicode('\n') => print!("{}>>", '\n'),
+                //         DecodedKey::Unicode('\u{8}') => print!("{}", '\u{8}'),
+                //         _ => print!("{}", character),
+                //     },
+                //     DecodedKey::RawKey(key) => print!("{:?}", key),
+                // }
             }
         }
     }
 }
 
+fn key_task(key: DecodedKey) {
+    match key {
+        DecodedKey::Unicode(character) => match DecodedKey::Unicode(character) {
+            DecodedKey::Unicode('\n') => print!("{}>>", '\n'),
+            DecodedKey::Unicode('\u{8}') => print!("{}", '\u{8}'),
+            _ => print!("{}", character),
+        },
+        pc_keyboard::DecodedKey::RawKey(KeyCode::ArrowLeft) => {
+            print!("{}", '\u{128}');
+        }
+        pc_keyboard::DecodedKey::RawKey(KeyCode::ArrowRight) => {
+            print!("{}", '\u{129}');
+        }
+        DecodedKey::RawKey(key) => {
+            print!("{:?}", key)
+        }
+    }
+}

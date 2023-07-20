@@ -11,9 +11,13 @@ pub mod allocator;
 pub mod gdt;
 pub mod interrupts;
 pub mod memory;
+pub mod os_start;
 pub mod serial;
+pub mod shell;
+pub mod sleep;
 pub mod task;
 pub mod vga_buffer;
+mod pcb;
 extern crate alloc;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

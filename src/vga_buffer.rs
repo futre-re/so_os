@@ -1,7 +1,10 @@
+use crate::task::executor::Executor;
 use core::fmt;
 use lazy_static::lazy_static;
 use spin::Mutex;
 use volatile::Volatile;
+
+use crate::sleep;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -43,8 +46,8 @@ struct ScreenChar {
 }
 
 const BUFFER_HEIGHT: usize = 25;
-const BUFFER_WIDTH: usize = 80;
-
+const HOVER_POS: usize = 0;
+pub const BUFFER_WIDTH: usize = 80;
 #[repr(transparent)]
 struct Buffer {
     chars: [[Volatile<ScreenChar>; BUFFER_WIDTH]; BUFFER_HEIGHT],
@@ -78,9 +81,27 @@ impl Writer {
         }
     }
 
+    pub fn delet_byte(&mut self) {
+        let color_code = self.color_code;
+        let row = BUFFER_HEIGHT - 1;
+        let col = self.column_position - 1;
+        if col >= 2 {
+            self.buffer.chars[row][col].write(ScreenChar {
+                ascii_character: b' ',
+                color_code,
+            });
+            self.column_position -= 1;
+        } else {
+        }
+    }
+
     pub fn write_string(&mut self, s: &str) {
         for byte in s.bytes() {
             match byte {
+                8 => {
+                    //退格处理
+                    self.delet_byte();
+                }
                 // 可以是能打印的 ASCII 码字节，也可以是换行符
                 0x20..=0x7e | b'\n' => self.write_byte(byte),
                 // 不包含在上述范围之内的字节
@@ -88,7 +109,14 @@ impl Writer {
             }
         }
     }
-
+    // fn down_line(&mut self) {
+    //     for row in (BUFFER_HEIGHT - 2..0).rev() {
+    //         for col in 0..BUFFER_WIDTH {
+    //             let character = self.buffer.chars[row][col].read();
+    //             self.buffer.chars[row + 1][col].write(character);
+    //         }
+    //     }
+    // }
     fn new_line(&mut self) {
         for row in 1..BUFFER_HEIGHT {
             for col in 0..BUFFER_WIDTH {
@@ -109,6 +137,19 @@ impl Writer {
             self.buffer.chars[row][col].write(blank);
         }
     }
+    // pub async fn hover(&mut self) {
+    //     //self.write_byte(65);
+    //     let row = BUFFER_HEIGHT - 1;
+    //     let col = self.column_position - 1;
+    //     let color_code = self.color_code;
+    //     let current_char = self.buffer.chars[row][col - 1].read();
+
+    //     self.buffer.chars[row][col - 1].write(ScreenChar {
+    //         ascii_character: b'_',
+    //         color_code,
+    //     });
+    //     self.buffer.chars[row][col - 1].write(current_char);
+    // }
 }
 
 impl fmt::Write for Writer {

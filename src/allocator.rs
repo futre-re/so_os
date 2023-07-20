@@ -21,7 +21,7 @@ use x86_64::{
     },
     VirtAddr,
 };
-
+//堆分配初始化
 pub fn init_heap(
     mapper: &mut impl Mapper<Size4KiB>,
     frame_allocator: &mut impl FrameAllocator<Size4KiB>,

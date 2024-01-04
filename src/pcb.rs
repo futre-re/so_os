@@ -1,31 +1,44 @@
-use alloc::string::String;
-
-//实现了进程的id，状态
-struct PCB {
-    process_id: u32,       //进程ID
-    process_state: String, //进程的状态
-    program_counter: u32,  //程序计数器的值
-    registers: [u32; 8],   //存储进程的寄存器的值
-                           // 其他进程相关的信息
+use alloc::{string::String, vec::Vec};
+struct Process {
+    id: u32,
+    name: String,
+    remaining_time: u32,
 }
 
-impl PCB {
-    fn new(process_id: u32) -> PCB {
-        PCB {
-            process_id,
-            process_state: String::from("READY"),
-            program_counter: 0,
-            registers: [0; 8],
+impl Process {
+    fn new(id: u32, name: String, remaining_time: u32) -> Process {
+        Process {
+            id,
+            name,
+            remaining_time,
         }
     }
 
-    fn set_state(&mut self, state: &str) {
-        self.process_state = String::from(state);
+    fn execute(&mut self, time_slice: u32) {
+        if self.remaining_time > time_slice {
+            self.remaining_time -= time_slice;
+        } else {
+            self.remaining_time = 0;
+        }
     }
 
-    fn get_state(&self) -> &str {
-        &self.process_state
+    fn is_finished(&self) -> bool {
+        self.remaining_time == 0
     }
+}
 
-    // 其他操作和方法
+
+fn time_slice_round_robin(processes: &mut Vec<Process>, time_slice: u32) {
+    let mut queue: Vec<&mut Process> = processes.iter_mut().collect();
+    let mut index = 0;
+
+    while !queue.is_empty() {
+        let current_process = queue.get_mut(index).unwrap();
+        current_process.execute(time_slice);
+        if current_process.is_finished() {
+            queue.remove(index);
+        } else {
+            index = (index + 1) % queue.len();
+        }
+    }
 }

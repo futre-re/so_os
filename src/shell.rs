@@ -43,7 +43,7 @@ pub async fn shell() {
 fn key_task(key: DecodedKey) {
     match key {
         DecodedKey::Unicode(character) => match DecodedKey::Unicode(character) {
-            DecodedKey::Unicode('\n') => print!("{}>>", '\n'),
+            DecodedKey::Unicode('\n') => print!("{}", '\n'),
             DecodedKey::Unicode('\u{8}') => print!("{}", '\u{8}'),
             _ => print!("{}", character),
         },

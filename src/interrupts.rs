@@ -1,9 +1,12 @@
 use crate::gdt;
 use crate::hlt_loop;
 use crate::println;
+use crate::vga_buffer;
+use core::time;
 use lazy_static::lazy_static;
 use pic8259::ChainedPics;
 use spin;
+use x86_64::instructions::port::Port;
 use x86_64::structures::idt::PageFaultErrorCode;
 use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame};
 
@@ -84,8 +87,25 @@ impl InterruptIndex {
     }
 }
 
+//设置中断时钟间隔
+const PIT_CONTROL_PORT: u16 = 0x43;
+const PIT_CHANNEL_0_PORT: u16 = 0x40;
+
+pub fn set_interval(hz: u16) {
+    let divisor = (1193180 / (hz as u32)) as u16;
+    unsafe {
+        let mut port = Port::new(PIT_CONTROL_PORT);
+        port.write(0x36 as u16); // Channel 0, lobyte/hibyte, mode 3
+        let mut port = Port::new(PIT_CHANNEL_0_PORT);
+        port.write((divisor & 0xFF) as u8);
+        let mut port = Port::new(PIT_CHANNEL_0_PORT);
+        port.write((divisor >> 8) as u8);
+    }
+}
+
 extern "x86-interrupt" fn timer_interrupt_handler(_stack_frame: InterruptStackFrame) {
-    //print!(".");
+    println!(".");
+    //时间中断处理,时间片中断
     unsafe {
         PICS.lock()
             .notify_end_of_interrupt(InterruptIndex::Timer.as_u8());
@@ -93,6 +113,7 @@ extern "x86-interrupt" fn timer_interrupt_handler(_stack_frame: InterruptStackFr
 }
 
 pub fn init_idt() {
+    set_interval(100); //设置10ms的中断时钟
     IDT.load();
 }
 

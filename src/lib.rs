@@ -16,6 +16,7 @@ pub mod serial;
 pub mod shell;
 pub mod sleep;
 pub mod task;
+pub mod pcb;
 pub mod vga_buffer;
 mod pcb;
 extern crate alloc;

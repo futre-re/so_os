@@ -104,7 +104,6 @@ pub fn set_interval(hz: u16) {
 }
 
 extern "x86-interrupt" fn timer_interrupt_handler(_stack_frame: InterruptStackFrame) {
-    println!(".");
     //时间中断处理,时间片中断
     unsafe {
         PICS.lock()
